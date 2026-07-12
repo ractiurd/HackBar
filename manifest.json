@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "HackBar - by Ractiurd (Mahedi Hasan)",
+  "version": "2.0",
+  "description": "Modern HackBar: encode/decode, hash, request engine, and payload library for bug bounty & pentesting.",
+  "permissions": ["activeTab", "sidePanel", "scripting", "storage", "tabs", "cookies", "declarativeNetRequest", "webNavigation", "webRequest"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "panel.html"
+  },
+  "action": {
+    "default_title": "Open HackBar"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["lib/gs_content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["lib/gs_result.html", "lib/gs_result.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

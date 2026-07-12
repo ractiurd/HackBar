@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HackBar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="head">
+    <span class="brand"><span class="dot">▚</span> HackBar <span class="ver">v3.1</span> <span class="sep">|</span> <span class="creator">Ractiurd (Mahedi Hasan)</span></span>    <span class="grow"></span>
+    <input id="search" class="search" placeholder="filter payloads…" spellcheck="false">
+    <button id="gs" class="gs" type="button" title="GhoulSight — toggle XSS scanner (Alt+G)"><span class="gs-dot"></span>GhoulSight</button>
+    <button id="nrd" class="nrd" type="button" title="NoRedirect — don't follow redirects (Alt+R)"><span class="nrd-dot"></span>NoRedirect</button>
+    <button id="nrd-edit" class="nrd-edit" type="button" title="NoRedirect block-list — URLs always blocked (Alt+Shift+R)">☰</button>
+    <div id="nrd-pop" class="nr-pop hidden">
+      <div class="nr-pop-h">
+        <div class="nr-tabs">
+          <button id="tab-nrd" class="nr-tab active" type="button">NoRedirect</button>
+          <button id="tab-gs" class="nr-tab" type="button">GhoulSight</button>
+        </div>
+        <button id="nrd-close" class="nr-x" type="button" title="Close">✕</button>
+      </div>
+
+      <div id="pane-nrd" class="nr-pane">
+        <p class="nr-pop-note">One entry per line. A request whose target <b>contains</b> a line is <b>always blocked</b> (redirect prevented), even when NoRedirect is OFF. Wrap a line in <b>/…/</b> to match as a regex (e.g. <code>/^https?:\/\/[^/]+\/admin\/?$/</code>).</p>
+        <textarea id="nrd-block" class="nr-allow" spellcheck="false" placeholder="example.com/admin&#10;/admin/&#10;/^https?:\/\/[^/]+\/login/"></textarea>
+        <div class="nr-pop-f">saved automatically · <span id="nrd-cnt">0</span> entries</div>
+      </div>
+
+      <div id="pane-gs" class="nr-pane hidden">
+        <p class="nr-pop-note">Configure your <b>GhoulSight</b> server, then toggle the scanner with the header button. Found XSS vulns open a popup automatically.</p>
+        <a class="gs-link" href="https://github.com/ractiurd/ghoulsight" target="_blank" rel="noopener">⤓ Get GhoulSight server on GitHub ↗</a>
+        <label class="gs-field"><span>API Key</span><input id="gs-apikey" type="password" spellcheck="false" placeholder="your GhoulSight API key"></label>
+        <label class="gs-field"><span>Server URL</span><input id="gs-server" type="text" spellcheck="false" placeholder="https://ghoulsight.example.com"></label>
+        <label class="gs-field"><span>Custom headers</span><textarea id="gs-headers" class="nr-allow" spellcheck="false" placeholder="Header1: Value1&#10;Header2: Value2"></textarea></label>
+        <div class="gs-chks">
+          <label class="chk"><input type="checkbox" id="gs-cookies"> Collect Cookies &amp; Headers</label>
+          <label class="chk"><input type="checkbox" id="gs-follow" checked> Follow links within domain</label>
+          <label class="chk"><input type="checkbox" id="gs-crawl"> Active Crawl (Page+1)</label>
+        </div>
+        <button id="gs-save" class="btn go small gs-save" type="button">Save settings</button>
+        <div class="nr-pop-f" id="gs-savemsg">settings saved automatically</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dock">
+    <div class="dockbar">
+      <button id="btn-load" class="btn" title="Load URL (Alt+A)">Load</button>
+      <button id="btn-split" class="btn" title="Split URL (Alt+S)">Split</button>
+      <button id="btn-exec" class="btn go" title="Execute (Alt+X)">Execute</button>
+      <span class="sep"></span>
+      <label class="chk"><input type="checkbox" id="post"> POST</label>
+      <label class="chk"><input type="checkbox" id="cookie"> Cookie</label>
+      <span class="sep"></span>
+      <div id="gs-summary" class="gs-summary" title="GhoulSight live scan stats">
+        <span class="gs-cell" title="Requests sent to the server"><b id="gs-s-sent">0</b><i>sent</i></span>
+        <span class="gs-cell" title="Job IDs received from the server"><b id="gs-s-jobs">0</b><i>jobs</i></span>
+        <span class="gs-cell" title="Duplicate URLs skipped (same path + params)"><b id="gs-s-dedup">0</b><i>dedup</i></span>
+        <span class="gs-cell gs-cell-poc" title="XSS PoCs confirmed"><b id="gs-s-poc">0</b><i>POC</i></span>
+      </div>
+      <span class="grow"></span>
+      <span id="status" class="status">Ready</span>
+    </div>
+    <div class="urltools">
+      <div class="seg" role="group" aria-label="History navigation">
+        <button id="btn-back" class="seg-btn" type="button" title="Back — previous URL (Alt+Left)" disabled>‹</button>
+        <button id="btn-fwd" class="seg-btn" type="button" title="Forward — next URL (Alt+Right)" disabled>›</button>
+      </div>
+      <div class="seg" role="group" aria-label="Step number and execute">
+        <button id="btn-dec" class="seg-btn" type="button" title="Decrement selected number (−1) and Execute (Alt+Down)">−</button>
+        <button id="btn-inc" class="seg-btn" type="button" title="Increment selected number (+1) and Execute (Alt+Up)">+</button>
+      </div>
+    </div>
+    <div class="url-wrap">
+      <textarea id="url" class="url" rows="3" spellcheck="false" placeholder="target url …  (Execute opens the result in the current tab)"></textarea>
+      <div class="url-resize">
+        <button id="url-up" class="rbtn" type="button" title="Bigger">+</button>
+        <button id="url-dn" class="rbtn" type="button" title="Smaller">−</button>
+      </div>
+    </div>
+    <div id="post-wrap" class="sub hidden"><span class="sub-l">POST</span><textarea id="body" class="sub-f" spellcheck="false" placeholder="param1=value1&amp;param2=value2"></textarea></div>
+    <div id="cookie-wrap" class="sub hidden"><span class="sub-l">COOKIE</span><textarea id="ck" class="sub-f" spellcheck="false" placeholder="name=value; name2=value2"></textarea></div>
+  </div>
+
+  <div id="quickbar" class="quickbar"></div>
+
+  <div id="cattabs" class="cattabs"></div>
+
+  <div class="browser">
+    <div id="subcats" class="subcats"></div>
+    <div id="plist" class="plist"></div>
+  </div>
+
+  <script type="module" src="panel.js"></script>
+</body>
+</html>
